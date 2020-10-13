@@ -17,29 +17,49 @@
 -->
 <md-dialog aria-label="Define dates for the subscription">
   <md-dialog-content layout-padding>
-    <h4>Accept subscription</h4>
-    <div ng-cloak layout="column">
-      <div class="md-inline-form">
-        <md-input-container>
-          <label>Start date</label>
-          <md-datepicker ng-model="starting_at" md-min-date="now"></md-datepicker>
-        </md-input-container>
-        <md-input-container>
-          <label>End date</label>
-          <md-datepicker ng-model="ending_at" md-min-date="starting_at"></md-datepicker>
-        </md-input-container>
-      </div>
-      <md-input-container>
-        <div layout="column" ng-cloak class="md-inline-form">
-          <h5>If needed, add a message:</h5>
-          <textarea ng-model="reason" aria-label="Reason"></textarea>
+    <form name="SubscriptionForm" ng-submit="$event.preventDefault()">
+      <h4>Accept subscription</h4>
+      <div ng-cloak layout="column">
+        <div class="md-inline-form">
+          <md-input-container>
+            <label>Start date</label>
+            <md-datepicker ng-model="starting_at" md-min-date="now"></md-datepicker>
+          </md-input-container>
+          <md-input-container>
+            <label>End date</label>
+            <md-datepicker ng-model="ending_at" md-min-date="starting_at"></md-datepicker>
+          </md-input-container>
         </div>
-      </md-input-container>
-    </div>
+        <md-input-container>
+          <div layout="column" ng-cloak class="md-inline-form">
+            <h5>If needed, add a message:</h5>
+            <textarea ng-model="reason" aria-label="Reason"></textarea>
+          </div>
+        </md-input-container>
+        <div ng-if="canUseCustomApiKey">
+          <h5 style="margin-bottom: 20px">This plan allows custom API keys. You can provide it here.</h5>
+          <div>
+            <validated-input form-reference="SubscriptionForm"
+                             label="'Custom API key'"
+                             success="dialogSubscriptionAcceptController.customApiKeyInputState === 'valid'"
+                             failure="dialogSubscriptionAcceptController.customApiKeyInputState === 'invalid'"
+                             on-change="dialogSubscriptionAcceptController.checkApiKeyUnicity"
+                             min-length-label="'API key has to be empty or more than 8 characters long.'"
+                             max-length-label="'API key has to be 64 characters long maximum.'"
+                             regex-label="'The API key contains illegal characters.'"
+            ></validated-input>
+          </div>
+        </div>
+      </div>
+    </form>
   </md-dialog-content>
 
   <md-dialog-actions layout="row">
     <md-button ng-click="dialogSubscriptionAcceptController.hide()">Cancel</md-button>
-    <md-button class="md-raised md-primary" ng-click="dialogSubscriptionAcceptController.save()">Accept</md-button>
+    <md-button class="md-raised md-primary"
+               ng-click="dialogSubscriptionAcceptController.save()"
+               ng-disabled="dialogSubscriptionAcceptController.customApiKeyInputState === 'invalid'
+                            || SubscriptionForm.$invalid"
+    >Accept</md-button>
   </md-dialog-actions>
 </md-dialog>

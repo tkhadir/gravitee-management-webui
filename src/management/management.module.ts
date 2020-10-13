@@ -211,6 +211,7 @@ import DialogSubscriptionTransferController
   from '../management/api/portal/subscriptions/subscription.transfer.dialog.controller';
 import DialogSubscriptionChangeEndDateController
   from '../management/api/portal/subscriptions/subscription.change.end.date.dialog.controller';
+import DialogSubscriptionRenewController from './api/portal/subscriptions/subscription.renew.dialog.controller';
 import EmptyStateDirective from '../components/emptystate/emptystate.directive';
 import DialogPublishPlanController from '../management/api/portal/plans/publishPlanDialog.controller';
 import TagsController from '../management/configuration/tags/tags.controller';
@@ -488,6 +489,7 @@ import UpdateFieldDialogController from './configuration/custom-user-fields/dial
 import angular = require('angular');
 
 import ngInfiniteScroll = require('ng-infinite-scroll');
+import ApiValidatedInput from '../components/input/apiValidatedInput.component';
 
 
 (<any>window).traverse = traverse;
@@ -704,6 +706,7 @@ angular.module('gravitee-management', [uiRouter, permission, uiPermission, 'ngMa
   .controller('DialogSubscriptionCreateController', DialogSubscriptionCreateController)
   .controller('DialogSubscriptionTransferController', DialogSubscriptionTransferController)
   .controller('DialogSubscriptionChangeEndDateController', DialogSubscriptionChangeEndDateController)
+  .controller('DialogSubscriptionRenewController', DialogSubscriptionRenewController)
   .controller('DialogPublishPlanController', DialogPublishPlanController)
   .controller('TagsController', TagsController)
   .controller('MetadataController', MetadataController)
@@ -840,6 +843,7 @@ angular.module('gravitee-management', [uiRouter, permission, uiPermission, 'ngMa
   .component('planWizardRestrictions', ApiEditPlanWizardRestrictionsComponent)
 
   // API subscriptions
+  .component('validatedInput', ApiValidatedInput)
   .component('apiSubscriptions', ApiSubscriptionsComponent)
   .component('apiSubscription', ApiSubscriptionComponent)
 

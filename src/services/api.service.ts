@@ -32,12 +32,18 @@ interface IMembership {
   role: string;
 }
 
+export enum CustomApiKeyInputState {
+  EMPTY = 'empty',
+  VALID = 'valid',
+  INVALID = 'invalid'
+}
+
 class ApiService {
   private apisURL: string;
   private Constants: any;
   private analyticsHttpTimeout: number;
 
-  constructor(private $http, Constants) {
+  constructor(private $http, Constants, private $q: ng.IQService) {
     'ngInject';
     this.apisURL = `${Constants.envBaseURL}/apis/`;
     this.Constants = Constants;
@@ -387,8 +393,15 @@ class ApiService {
     return this.$http.get(this.apisURL + apiId + '/subscriptions?plan=' + planId + '&status=accepted,pending,rejected,closed');
   }
 
-  subscribe(apiId: string, applicationId: string, planId: string): ng.IHttpPromise<any> {
-    return this.$http.post(this.apisURL + apiId + '/subscriptions?plan=' + planId + '&application=' + applicationId, '');
+  subscribe(apiId: string, applicationId: string, planId: string, customApiKey: string): ng.IHttpPromise<any> {
+    let params = {
+      params: {
+        plan: planId,
+        application: applicationId,
+        customApiKey: customApiKey
+      }
+    }
+    return this.$http.post(this.apisURL + apiId + '/subscriptions', null, params);
   }
 
   listApiKeys(apiId, subscriptionId): ng.IPromise<any> {
@@ -403,8 +416,13 @@ class ApiService {
     return this.$http.post(this.apisURL + apiId + '/subscriptions/' + subscriptionId + '/keys/' + apiKey + '/_reactivate', '');
   }
 
-  renewApiKey(apiId, subscriptionId): ng.IPromise<any> {
-    return this.$http.post(this.apisURL + apiId + '/subscriptions/' + subscriptionId);
+  renewApiKey(apiId, subscriptionId, customApiKey): ng.IPromise<any> {
+    let params = {
+      params: {
+        customApiKey: customApiKey
+      }
+    }
+    return this.$http.post(this.apisURL + apiId + '/subscriptions/' + subscriptionId, null, params);
   }
 
   updateApiKey(apiId, apiKey): ng.IPromise<any> {
@@ -566,6 +584,31 @@ class ApiService {
 
   rejectReview(api, message): ng.IPromise<any> {
     return this.$http.post(this.apisURL + api.id + '/reviews?action=REJECT', { message: message }, { headers: { 'If-Match': api.etag } });
+  }
+
+  /*
+   * Api Keys
+   */
+  verifyApiKey(apiId: string, apiKey: string): ng.IPromise<any> {
+    return this.$http.get(this.apisURL + apiId + '/keys/verify?apiKey=' + apiKey);
+  }
+
+  checkApiKeyUnicity(apiId: string, apiKey: string) {
+    let deferred = this.$q.defer();
+    if (apiKey && apiKey.length > 0) {
+      this.verifyApiKey(apiId, apiKey).then((response) => {
+        if (response && response.data) {
+          deferred.resolve(CustomApiKeyInputState.VALID);
+        } else {
+          deferred.resolve(CustomApiKeyInputState.INVALID);
+        }
+      }, () => {
+        deferred.resolve(CustomApiKeyInputState.INVALID);
+      });
+    } else {
+      deferred.resolve(CustomApiKeyInputState.EMPTY);
+    }
+    return deferred.promise;
   }
 
   /*

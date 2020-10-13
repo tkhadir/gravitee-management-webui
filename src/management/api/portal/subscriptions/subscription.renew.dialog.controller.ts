@@ -13,38 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import moment = require('moment');
 import ApiService, { CustomApiKeyInputState } from "../../../../services/api.service";
 
-function DialogSubscriptionAcceptController($scope, $mdDialog, locals, ApiService: ApiService) {
+function DialogSubscriptionRenewController(
+  $scope,
+  $mdDialog,
+  locals,
+  ApiService: ApiService
+) {
   'ngInject';
 
-  $scope.now = moment().toDate();
-  $scope.canUseCustomApiKey = locals.canUseCustomApiKey;
-
+  $scope.title = locals.title;
+  $scope.msg = locals.msg;
+  $scope.customMessage = locals.customMessage;
+  $scope.confirmButton = locals.confirmButton || 'OK';
+  $scope.cancelButton = locals.cancelButton || 'Cancel';
+  $scope.apiId = locals.apiId;
+  this.selectedPlanCustomApiKey = null;
   this.customApiKeyInputState = CustomApiKeyInputState.EMPTY;
-  this.customApiKey = null;
+  this.customValue = '';
 
-  this.hide = function () {
-    $mdDialog.cancel();
+  this.cancel = function() {
+    $mdDialog.hide({confirmed: false});
   };
 
-  this.save = function () {
-    $mdDialog.hide({
-      starting_at: $scope.starting_at,
-      ending_at: $scope.ending_at,
-      reason: $scope.reason,
-      customApiKey: this.customApiKey
-    });
+  this.confirm = () => {
+    this.customValue ?
+      $mdDialog.hide({confirmed: true, customValue: this.customValue})
+      : $mdDialog.hide({confirmed: true});
   };
 
   this.checkApiKeyUnicity = (customApiKey) => {
-    this.customApiKey = customApiKey;
+    this.customValue = customApiKey;
     ApiService.checkApiKeyUnicity($scope.apiId, customApiKey)
-      .then(customApiKeyInputState => {
-        this.customApiKeyInputState = customApiKeyInputState;
-      });
+      .then(customApiKeyInputState => this.customApiKeyInputState = customApiKeyInputState);
   };
 }
 
-export default DialogSubscriptionAcceptController;
+export default DialogSubscriptionRenewController;
