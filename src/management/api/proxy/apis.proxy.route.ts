@@ -16,6 +16,7 @@
 import TenantService from '../../../services/tenant.service';
 import ApiService from '../../../services/api.service';
 import ServiceDiscoveryService from '../../../services/serviceDiscovery.service';
+import EnvironmentService from '../../../services/environment.service';
 
 export default apisProxyRouterConfig;
 
@@ -31,7 +32,8 @@ function apisProxyRouterConfig($stateProvider) {
       controller: 'ApiProxyController',
       controllerAs: 'apiProxyCtrl',
       resolve: {
-        resolvedTenants: (TenantService: TenantService) => TenantService.list()
+        resolvedTenants: (TenantService: TenantService) => TenantService.list(),
+        resolvedCurrentEnvironment: (EnvironmentService: EnvironmentService) => EnvironmentService.getCurrent()
       },
       data: {
         menu: {

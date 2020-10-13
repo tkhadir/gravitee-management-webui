@@ -37,6 +37,9 @@ class ApiProxyController {
   private discovery: any;
   private virtualHostModeEnabled: boolean;
   private allowOriginPattern = '^(?:(?:[htps\\(\\)?\\|]+):\\/\\/)*(?:[\\w\\(\\)\\[\\]\\{\\}?\\|.*-](?:(?:[?+*]|\\{\\d+(?:,\\d*)?\\}))?)+(?:[a-zA-Z0-9]{2,6})?(?::\\d{1,5})?$';
+  private domainRestrictions: string[];
+  private domainRegexList: RegExp[] = [];
+  private hostPattern: string;
 
   constructor(
     private ApiService: ApiService,
@@ -50,6 +53,7 @@ class ApiProxyController {
     private GroupService: GroupService,
     private SidenavService: SidenavService,
     private resolvedCategories,
+    private resolvedCurrentEnvironment,
     private resolvedGroups,
     private resolvedTags,
     private resolvedTenants,
@@ -72,7 +76,7 @@ class ApiProxyController {
     this.initialDiscovery = _.cloneDeep(this.discovery);
     this.tenants = resolvedTenants.data;
     this.$scope.selected = [];
-
+    this.initDomainRestrictions(this.resolvedCurrentEnvironment.data);
     this.$scope.searchHeaders = null;
 
     this.api.labels = this.api.labels || [];
@@ -403,6 +407,69 @@ class ApiProxyController {
       this.formApi.$setDirty();
     }
   }
+
+  getHostOptions(host: string): string[] {
+    this.domainRegexList.forEach(regex => host = host.replace(regex, ''));
+
+    if (host !== '' && !_.includes(this.domainRestrictions, host)) {
+      return this.domainRestrictions.map(domain => host + '.' + domain);
+    }
+
+    return this.domainRestrictions;
+  }
+
+  initDomainRestrictions(data: any) {
+    this.domainRestrictions = data.domainRestrictions;
+
+    if (this.domainRestrictions === undefined) {
+      this.domainRestrictions = [];
+    }
+
+    if (this.domainRestrictions.length === 0) {
+      this.hostPattern = '^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$';
+    } else {
+      this.hostPattern = this.domainRestrictions.map(value => '^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+' + value + '$').join('|');
+    }
+
+    // Prepare host regex (used to assist user when specifying an host).
+    this.domainRegexList = this.domainRestrictions.map(value => new RegExp('\\.?' + value, 'i'));
+  }
+
+  focus(inputId: string) {
+    const input: HTMLInputElement = document.querySelector('#' + inputId);
+    if (input.value) {
+      if (_.includes(this.domainRestrictions, input.value) && !input.value.startsWith('.')) {
+        input.value = '.' + input.value;
+      }
+      for (let i = 0; i < this.domainRegexList.length; i++) {
+        let match = input.value.match(this.domainRegexList[i]);
+
+        if (match) {
+          let index = input.value.indexOf(match[0]);
+          if (input.selectionStart > index) {
+            input.setSelectionRange(index, index);
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  unfocus(vHost: any, inputId: string) {
+    const input: HTMLInputElement = document.querySelector('#' + inputId);
+    if (input.value) {
+      if (input.value.startsWith('.')) {
+        input.value = input.value.replace('.', '');
+      }
+    }
+    if (vHost.host) {
+      if (vHost.host.startsWith('.')) {
+        vHost.host = vHost.host.replace('.', '');
+      }
+    }
+    vHost.host = input.value;
+  }
+
 }
 
 export default ApiProxyController;
