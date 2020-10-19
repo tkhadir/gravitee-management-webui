@@ -33,6 +33,7 @@ const PortalSettingsComponent: ng.IComponentOptions = {
     this.settings = _.cloneDeep(Constants);
 
     this.$onInit = () => {
+      this.settings.api.labelsDictionary = this.settings.api.labelsDictionary || [];
       this.settings.authentication.localLogin.enabled = (this.settings.authentication.localLogin.enabled || !this.hasIdpDefined());
     };
 

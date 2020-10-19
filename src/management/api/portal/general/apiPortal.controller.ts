@@ -19,6 +19,7 @@ import UserService from '../../../../services/user.service';
 import {QualityMetrics} from '../../../../entities/qualityMetrics';
 import ApiService from '../../../../services/api.service';
 import PolicyService from '../../../../services/policy.service';
+import PortalConfigService from "../../../../services/portalConfig.service";
 
 class ApiPortalController {
   private initialApi: any;
@@ -35,12 +36,14 @@ class ApiPortalController {
   private qualityMetrics: QualityMetrics;
   private qualityMetricsDescription: Map<string, string>;
   private isQualityEnabled: boolean;
+  private apiLabelsDictionary = [];
 
   constructor(
     private ApiService: ApiService,
     private NotificationService,
     private UserService: UserService,
     private PolicyService: PolicyService,
+    private PortalConfigService: PortalConfigService,
     private $scope,
     private $mdDialog,
     private $mdEditDialog,
@@ -147,6 +150,7 @@ class ApiPortalController {
 
   $onInit() {
     this.computeQualityMetrics();
+    this.initializeApiLabelsDictionary();
   }
 
   computeQualityMetrics() {
@@ -156,6 +160,10 @@ class ApiPortalController {
         this.qualityMetrics = response.data;
       });
     }
+  }
+
+  initializeApiLabelsDictionary() {
+    this.PortalConfigService.get().then(response => this.apiLabelsDictionary = response.data.api.labelsDictionary)
   }
 
   toggleVisibility() {
@@ -349,11 +357,11 @@ class ApiPortalController {
     return _.find(this.groups, {'id': groupId});
   }
 
-  /**
-   * Search for HTTP Headers.
+  /*
+   * Search for Labels
    */
-  querySearchHeaders(query) {
-    return query ? this.headers.filter(this.createFilterFor(query)) : [];
+  querySearchLabels(query) {
+    return query ? this.apiLabelsDictionary.filter(this.createFilterFor(query)) : [];
   }
 
   /**
@@ -362,8 +370,8 @@ class ApiPortalController {
   createFilterFor(query) {
     let lowercaseQuery = query.toLowerCase();
 
-    return function filterFn(header) {
-      return header.toLowerCase().indexOf(lowercaseQuery) === 0;
+    return function filterFn(item) {
+      return item.toLowerCase().indexOf(lowercaseQuery) !== -1;
     };
   }
 

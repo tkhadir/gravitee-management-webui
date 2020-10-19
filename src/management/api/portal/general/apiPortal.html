@@ -80,7 +80,17 @@
           <md-chips ng-model="portalCtrl.api.labels"
                     placeholder="Enter a label"
                     md-add-on-blur="true"
-                    ng-click="portalCtrl.formApi.$setDirty()"></md-chips>
+                    ng-click="portalCtrl.formApi.$setDirty()"
+                    md-autocomplete-snap
+                    md-require-match="false">
+            <md-autocomplete
+              md-search-text="searchLabels"
+              md-items="item in portalCtrl.querySearchLabels(searchLabels)"
+              md-item-text="item"
+              placeholder="Enter a label">
+              <span md-highlight-text="searchLabels">{{item}}</span>
+            </md-autocomplete>
+          </md-chips>
         </md-input-container>
         <div ng-if="portalCtrl.api.labels && portalCtrl.api.labels.length">
           <label>Labels</label>
