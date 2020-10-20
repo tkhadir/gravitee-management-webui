@@ -13,35 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+class FlowService {
 
-// tslint:disable-next-line:no-var-requires
-require('@gravitee/ui-components/wc/gv-option');
+  private flowURL: string;
 
-class NewApiController {
-
-  definitionVersion: any;
-  options: any[];
-  isImport: boolean;
-  private definitionVersions: string[];
-
-  constructor(
-    private policies,
-    private Constants: any
-  ) {
+  constructor(private $http, Constants) {
     'ngInject';
-    this.definitionVersions = Constants.definitionVersions;
-    this.definitionVersion = '2.0.0';
-    this.isImport = false;
+    this.flowURL = `${Constants.baseURL}/configuration/flow/`;
   }
 
-  versionLabel() {
-    return this.definitionVersion === '1.0.0' ? 'With Paths based' : 'With Design Studio';
-  }
-
-  cancelImport() {
-    this.isImport = false;
+  getSchema() {
+    return this.$http.get(`${this.flowURL}schema`);
   }
 
 }
 
-export default NewApiController;
+export default FlowService;
